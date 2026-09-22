@@ -1,0 +1,73 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { site, timeline } from '../data/site';
+---
+
+<BaseLayout title="About" description={`${site.name} について`}>
+  <div class="page-head">
+    <p class="label">about</p>
+    <h1>About</h1>
+  </div>
+
+  <div class="cols">
+    <section class="tile">
+      <p class="label">profile</p>
+      <p>
+        ここに自己紹介を書きます。普段何をしているのか、何に興味があるのか、このサイトで何を発信したいのかなど。
+      </p>
+    </section>
+
+    <section class="tile">
+      <p class="label">timeline</p>
+      <ul>
+        {
+          timeline.map((t) => (
+            <li>
+              <span class="year">{t.year}</span>
+              {t.text}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <section class="tile">
+      <p class="label">contact</p>
+      <ul>
+        <li><a class="link" href={`mailto:${site.email}`}>{site.email}</a></li>
+        {
+          site.links.map((l) => (
+            <li>
+              <a class="link" href={l.href} target="_blank" rel="noopener noreferrer">
+                {l.label} ↗
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 12px;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+  }
+  .year {
+    font-family: var(--mono);
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-right: 12px;
+  }
+</style>

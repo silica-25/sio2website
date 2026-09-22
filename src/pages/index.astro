@@ -1,0 +1,181 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { site, kakeibo, hobbies, log } from '../data/site';
+import { getNotes } from '../data/notes';
+
+const notes = await getNotes();
+
+const modules = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/photos/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
+  { eager: true },
+);
+const photos = Object.entries(modules)
+  .sort(([a], [b]) => b.localeCompare(a))
+  .map(([, mod]) => mod.default);
+---
+
+<BaseLayout>
+  <div class="bento">
+    <section class="tile hero">
+      <p class="label">// personal site</p>
+      <h1>{site.name}</h1>
+      <p class="lead">{site.tagline}</p>
+    </section>
+
+    <a class="tile kakeibo" href="/kakeibo">
+      <p class="label">app / {kakeibo.status}</p>
+      <h2>{kakeibo.name}</h2>
+      <p class="sub">{kakeibo.summary}</p>
+    </a>
+
+    <a class="tile hobbies" href="/hobbies">
+      <p class="label">hobbies</p>
+      <h2>趣味</h2>
+      <p class="sub">{hobbies.map((h) => h.title).join(' / ')}</p>
+    </a>
+
+    <section class="tile notes">
+      <p class="label">notes <a class="more" href="/notes">all →</a></p>
+      {
+        notes.length ? (
+          <ul>
+            {notes.slice(0, 4).map((n) => (
+              <li>
+                <span class="date">{n.date}</span>
+                <a class="link" href={n.url} target="_blank" rel="noopener noreferrer">
+                  {n.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p class="sub">まだ記事がありません。</p>
+        )
+      }
+    </section>
+
+    <section class="tile log">
+      <p class="label">log</p>
+      <ul>
+        {
+          log.slice(0, 6).map((l) => (
+            <li>
+              <span class="date">{l.date}</span>
+              <span class="tag">{l.tag}</span>
+              {l.text}
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+
+    <a class="tile photos" href="/photos">
+      <p class="label">photos / {photos.length}</p>
+      {
+        photos.length ? (
+          <div class="strip">
+            {photos.slice(0, 4).map((p) => (
+              <Image src={p} alt="" width={400} height={400} loading="lazy" />
+            ))}
+          </div>
+        ) : (
+          <p class="sub">写真を追加すると、ここに並びます。</p>
+        )
+      }
+    </a>
+  </div>
+</BaseLayout>
+
+<style>
+  .bento {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 12px;
+  }
+  .hero {
+    grid-column: span 4;
+    grid-row: span 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 260px;
+    padding: 28px;
+  }
+  .hero h1 {
+    font-family: var(--mono);
+    font-size: clamp(3rem, 10vw, 6rem);
+    margin-bottom: 0.5rem;
+  }
+  .hero .lead {
+    margin: 0;
+  }
+  .kakeibo,
+  .hobbies {
+    grid-column: span 2;
+  }
+  .notes,
+  .log {
+    grid-column: span 3;
+  }
+  .photos {
+    grid-column: span 6;
+  }
+  .strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  .strip img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+  }
+  .sub {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+    font-size: 0.92rem;
+  }
+  .date {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-right: 10px;
+  }
+  .more {
+    float: right;
+  }
+  .more:hover {
+    color: var(--text);
+  }
+
+  @media (max-width: 720px) {
+    .bento {
+      grid-template-columns: 1fr;
+    }
+    .hero,
+    .kakeibo,
+    .hobbies,
+    .notes,
+    .log,
+    .photos {
+      grid-column: auto;
+      grid-row: auto;
+    }
+    .strip {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+</style>

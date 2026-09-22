@@ -1,0 +1,69 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NoteList from '../components/NoteList.astro';
+import { getNotes } from '../data/notes';
+import { kakeibo, log } from '../data/site';
+
+const related = (await getNotes()).filter((n) => n.title.includes(kakeibo.keyword));
+const devLog = log.filter((l) => l.tag === 'kakeibo');
+---
+
+<BaseLayout title="Kakeibo" description={kakeibo.summary}>
+  <div class="page-head">
+    <p class="label">app / {kakeibo.status}</p>
+    <h1>{kakeibo.name}</h1>
+    <p class="lead">{kakeibo.summary}</p>
+    {
+      kakeibo.href && (
+        <p>
+          <a class="link" href={kakeibo.href} target="_blank" rel="noopener noreferrer">
+            リポジトリ / デモを見る ↗
+          </a>
+        </p>
+      )
+    }
+  </div>
+
+  <h2 class="label">notes</h2>
+  <NoteList
+    notes={related}
+    empty={`Note でタイトルに「${kakeibo.keyword}」を含む記事を公開すると、ここに並びます。`}
+  />
+
+  {
+    devLog.length > 0 && (
+      <>
+        <h2 class="label gap">dev log</h2>
+        <ul>
+          {devLog.map((l) => (
+            <li>
+              <span class="date">{l.date}</span>
+              {l.text}
+            </li>
+          ))}
+        </ul>
+      </>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .gap {
+    margin-top: 2.5rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  li {
+    padding: 6px 0;
+    border-top: 1px solid var(--border);
+  }
+  .date {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-right: 10px;
+  }
+</style>

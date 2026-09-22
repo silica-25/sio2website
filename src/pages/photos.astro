@@ -1,0 +1,69 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+
+// src/assets/photos/ に画像を入れるだけで並ぶ。ファイル名の新しい順 (日付から始めると撮影順になる)。
+const modules = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/photos/*.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
+  { eager: true },
+);
+
+const photos = Object.entries(modules)
+  .sort(([a], [b]) => b.localeCompare(a))
+  .map(([path, mod]) => ({
+    src: mod.default,
+    alt: path.split('/').pop()!.replace(/\.[^.]+$/, ''),
+  }));
+---
+
+<BaseLayout title="Photos" description="撮った写真">
+  <div class="page-head">
+    <p class="label">photos / {photos.length}</p>
+    <h1>Photos</h1>
+    <p class="lead">撮った写真を並べています。クリックで原寸表示。</p>
+  </div>
+
+  {
+    photos.length ? (
+      <div class="gallery">
+        {photos.map((p) => (
+          <a href={p.src.src} target="_blank" rel="noopener noreferrer">
+            <Image src={p.src} alt={p.alt} widths={[400, 800, 1200]} sizes="(max-width: 720px) 100vw, 33vw" loading="lazy" />
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="lead">
+        まだ写真がありません。<code>src/assets/photos/</code> に画像を入れると、ここに並びます。
+      </p>
+    )
+  }
+</BaseLayout>
+
+<style>
+  /* 縦横比がバラバラな写真でも隙間なく並ぶ */
+  .gallery {
+    columns: 3 260px;
+    column-gap: 12px;
+  }
+  .gallery a {
+    display: block;
+    margin-bottom: 12px;
+    border: 1px solid var(--border);
+    break-inside: avoid;
+    transition: border-color 0.15s;
+  }
+  .gallery a:hover {
+    border-color: var(--strong);
+  }
+  .gallery img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  code {
+    font-family: var(--mono);
+    font-size: 0.85em;
+  }
+</style>

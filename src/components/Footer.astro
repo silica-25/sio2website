@@ -1,0 +1,39 @@
+---
+import { site } from '../data/site';
+---
+
+<footer>
+  <div class="container row">
+    <span>© {new Date().getFullYear()} {site.name}</span>
+    <span class="links">
+      {site.links.map((l) => <a href={l.href} target="_blank" rel="noopener noreferrer">{l.label}</a>)}
+      <a href={`mailto:${site.email}`}>Mail</a>
+    </span>
+  </div>
+</footer>
+
+<style>
+  footer {
+    margin-top: 5rem;
+    padding: 20px 0;
+    border-top: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .links {
+    display: flex;
+    gap: 16px;
+  }
+  .links a:hover {
+    color: var(--text);
+  }
+</style>

@@ -1,0 +1,20 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NoteList from '../components/NoteList.astro';
+import { getNotes } from '../data/notes';
+import { site } from '../data/site';
+
+const notes = await getNotes();
+---
+
+<BaseLayout title="Notes" description="Note に書いた記事の一覧">
+  <div class="page-head">
+    <p class="label">notes</p>
+    <h1>Notes</h1>
+    <p class="lead">
+      記事は <a class="link" href={`https://note.com/${site.noteUser}`} target="_blank" rel="noopener noreferrer">Note</a> で書いています。ここは公開した記事の入口で、サイトを更新するたびに最新の一覧を取り込みます。
+    </p>
+  </div>
+
+  <NoteList notes={notes} empty="まだ記事がありません。Note で記事を公開すると、ここに並びます。" />
+</BaseLayout>

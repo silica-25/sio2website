@@ -1,0 +1,36 @@
+---
+import type { NoteItem } from '../data/notes';
+
+interface Props {
+  notes: NoteItem[];
+  empty?: string;
+}
+
+const { notes, empty = 'まだ記事がありません。' } = Astro.props;
+---
+
+{
+  notes.length ? (
+    <div class="list">
+      {notes.map((n) => (
+        <a class="tile" href={n.url} target="_blank" rel="noopener noreferrer">
+          <p class="label">{n.date}</p>
+          <h2>{n.title}</h2>
+        </a>
+      ))}
+    </div>
+  ) : (
+    <p class="lead">{empty}</p>
+  )
+}
+
+<style>
+  .list {
+    display: grid;
+    gap: 12px;
+  }
+  h2 {
+    margin: 0;
+    padding-right: 24px;
+  }
+</style>

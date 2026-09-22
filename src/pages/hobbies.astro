@@ -1,0 +1,43 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { hobbies } from '../data/site';
+---
+
+<BaseLayout title="Hobbies" description="趣味のこと">
+  <div class="page-head">
+    <p class="label">hobbies</p>
+    <h1>Hobbies</h1>
+    <p class="lead">好きなこと、ハマっていること。</p>
+  </div>
+
+  <div class="grid">
+    {
+      hobbies.map((h, i) => {
+        const Tag = h.href ? 'a' : 'section';
+        return (
+          <Tag class="tile" href={h.href}>
+            <p class="label">{String(i + 1).padStart(2, '0')}</p>
+            <h2>{h.title}</h2>
+            {h.note && <p class="note">{h.note}</p>}
+          </Tag>
+        );
+      })
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 12px;
+  }
+  h2 {
+    margin: 0 0 0.5rem;
+  }
+  .note {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+</style>
