@@ -1,5 +1,6 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
+import Avatar from '../components/Avatar.astro';
 import { site, timeline } from '../data/site';
 ---
 
@@ -10,11 +11,12 @@ import { site, timeline } from '../data/site';
   </div>
 
   <div class="cols">
-    <section class="tile">
+    <section class="tile profile">
       <p class="label">profile</p>
-      <p>
-        ここに自己紹介を書きます。普段何をしているのか、何に興味があるのか、このサイトで何を発信したいのかなど。
-      </p>
+      <div class="profile-row">
+        <Avatar size={80} />
+        <p>{site.bio}</p>
+      </div>
     </section>
 
     <section class="tile">
@@ -54,6 +56,20 @@ import { site, timeline } from '../data/site';
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 12px;
+  }
+  .profile {
+    grid-column: 1 / -1;
+  }
+  .profile-row {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .profile-row p {
+    margin: 0;
+    flex: 1;
+    min-width: 200px;
   }
   ul {
     list-style: none;

@@ -1,0 +1,369 @@
+---
+// 音楽ログの曲からランダムに1曲選んで、ページ内のプレイヤーで再生する。
+// 曲が増えても何もしなくてよい(ログの track をそのまま使う)。
+interface Track {
+  title: string;
+  sub?: string;
+  comment?: string;
+  url?: string;
+  embedUrl: string;
+}
+
+interface Props {
+  tracks: Track[];
+}
+
+const { tracks } = Astro.props;
+const pad = String(tracks.length).padStart(2, '0');
+---
+
+{
+  tracks.length > 0 && (
+    <section class="tile shuffle" id="shuffle">
+      <div class="head">
+        <p class="label">shuffle / {pad} tracks</p>
+        <span class="status" id="shuffle-status">idle</span>
+      </div>
+
+      <div class="deck">
+        <button type="button" id="shuffle-btn" class="btn">
+          <svg class="icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" aria-hidden="true">
+            <path d="M3 7h4l10 10h4" />
+            <path d="M3 17h4l3-3" />
+            <path d="M14 10l3-3h4" />
+            <path d="M18 4l3 3-3 3" />
+            <path d="M18 14l3 3-3 3" />
+          </svg>
+          <span id="shuffle-btn-text">ランダムで再生</span>
+        </button>
+
+        <div class="screen" id="shuffle-screen">
+          <p class="line idle caret" id="shuffle-title">押すと、溜まった曲から1曲えらびます</p>
+          <p class="sub" id="shuffle-sub" hidden />
+          <p class="note" id="shuffle-comment" hidden />
+        </div>
+      </div>
+
+      <div class="embed-wrap shuffle-embed" id="shuffle-embed" hidden />
+    </section>
+  )
+}
+
+<script is:inline src="https://open.spotify.com/embed/iframe-api/v1" async></script>
+<script define:vars={{ tracks }}>
+  const btn = document.getElementById('shuffle-btn');
+  if (btn) {
+    const root = document.getElementById('shuffle');
+    const btnText = document.getElementById('shuffle-btn-text');
+    const statusEl = document.getElementById('shuffle-status');
+    const titleEl = document.getElementById('shuffle-title');
+    const subEl = document.getElementById('shuffle-sub');
+    const commentEl = document.getElementById('shuffle-comment');
+    const embedEl = document.getElementById('shuffle-embed');
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    let api = null;
+    let controller = null;
+    let last = -1;
+    let busy = false;
+
+    // Spotify の再生用スクリプトが読み込めたときだけ使う(読めなければ通常の埋め込みに切り替える)
+    window.onSpotifyIframeApiReady = (IFrameAPI) => {
+      api = IFrameAPI;
+    };
+
+    const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+    const pick = () => {
+      if (tracks.length === 1) return 0;
+      let i;
+      do {
+        i = Math.floor(Math.random() * tracks.length);
+      } while (i === last);
+      return i;
+    };
+
+    const uriOf = (embedUrl) => {
+      const m = embedUrl.match(/embed\/(track|album|playlist|episode)\/([A-Za-z0-9]+)/);
+      return m ? `spotify:${m[1]}:${m[2]}` : null;
+    };
+
+    const setText = (el, text) => {
+      el.textContent = text || '';
+      el.hidden = !text;
+    };
+
+    let revealed = false;
+
+    // 押した瞬間: 裏でプレイヤーを読み込み始める(まだ見せない・鳴らさない)
+    const prepare = (t) => {
+      revealed = false;
+      embedEl.classList.add('pending');
+      embedEl.hidden = false;
+      const uri = uriOf(t.embedUrl);
+      if (api && uri) {
+        if (!controller) {
+          const holder = document.createElement('div');
+          embedEl.replaceChildren(holder);
+          api.createController(holder, { uri, width: '100%', height: 152 }, (c) => {
+            controller = c;
+            c.addListener('ready', () => {
+              if (revealed) c.play();
+            });
+          });
+        } else {
+          controller.loadUri(uri);
+        }
+      }
+    };
+
+    // 曲名が決まった瞬間: プレイヤーを見せて、再生を始める
+    const reveal = (t) => {
+      revealed = true;
+      const uri = uriOf(t.embedUrl);
+      if (api && uri) {
+        if (controller) controller.play();
+      } else {
+        const iframe = document.createElement('iframe');
+        iframe.src = t.embedUrl;
+        iframe.allow = 'encrypted-media; autoplay';
+        iframe.title = t.title;
+        embedEl.replaceChildren(iframe);
+      }
+      embedEl.classList.remove('pending');
+    };
+
+    btn.addEventListener('click', async () => {
+      if (busy) return;
+      busy = true;
+
+      last = pick();
+      const t = tracks[last];
+
+      // 押した瞬間に裏で読み込みを始める(曲名が決まるまでプレイヤーは見せない)
+      prepare(t);
+
+      root.classList.add('shuffling');
+      statusEl.textContent = 'shuffling';
+      titleEl.classList.remove('idle', 'caret');
+      setText(subEl, '');
+      setText(commentEl, '');
+
+      // 曲名がパラパラ切り替わってから、選ばれた曲で止まる
+      if (!reduceMotion && tracks.length > 1) {
+        for (let n = 0; n < 10; n++) {
+          titleEl.textContent = tracks[Math.floor(Math.random() * tracks.length)].title;
+          await sleep(60 + n * 14);
+        }
+      }
+
+      titleEl.textContent = t.title;
+      setText(subEl, t.sub);
+      setText(commentEl, t.comment);
+      reveal(t);
+      root.classList.remove('shuffling');
+      root.classList.add('playing');
+      statusEl.textContent = 'now playing';
+      btnText.textContent = 'もう1曲ランダム';
+      busy = false;
+    });
+  }
+</script>
+
+<style>
+  .shuffle {
+    margin-top: 1.5rem;
+    /* うっすらしたスキャンライン。暗い面に質感を足す */
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 3px,
+      color-mix(in srgb, var(--strong) 3.5%, transparent) 3px,
+      color-mix(in srgb, var(--strong) 3.5%, transparent) 4px
+    );
+  }
+  .head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .head .label {
+    margin: 0;
+  }
+  .status {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .status::before {
+    content: '';
+    display: inline-block;
+    width: 6px;
+    height: 6px;
+    margin-right: 8px;
+    background: var(--muted);
+    vertical-align: 1px;
+  }
+  .shuffling .status,
+  .playing .status {
+    color: var(--text);
+  }
+  .shuffling .status::before,
+  .playing .status::before {
+    background: var(--strong);
+    animation: pulse 1s steps(2) infinite;
+  }
+
+  .deck {
+    display: flex;
+    align-items: stretch;
+    gap: 14px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.1em;
+    padding: 0 20px;
+    min-height: 56px;
+    color: var(--text);
+    background: transparent;
+    border: 1px solid var(--strong);
+    cursor: pointer;
+    transition:
+      background 0.15s,
+      color 0.15s,
+      transform 0.1s;
+  }
+  .btn:hover {
+    background: var(--strong);
+    color: var(--bg);
+  }
+  .btn:active {
+    transform: translateY(1px);
+  }
+  .shuffling .btn {
+    pointer-events: none;
+  }
+  .shuffling .icon {
+    animation: spin 0.5s linear infinite;
+  }
+
+  /* 曲名の表示窓。四隅に小さな目印を付けて機械っぽく */
+  .screen {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    background: color-mix(in srgb, var(--bg) 70%, transparent);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 2px;
+  }
+  .screen::before,
+  .screen::after {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border: 1px solid var(--strong);
+    pointer-events: none;
+  }
+  .screen::before {
+    top: -1px;
+    left: -1px;
+    border-right: 0;
+    border-bottom: 0;
+  }
+  .screen::after {
+    right: -1px;
+    bottom: -1px;
+    border-left: 0;
+    border-top: 0;
+  }
+  .screen p {
+    margin: 0;
+  }
+  .line {
+    font-weight: 600;
+    word-break: break-word;
+  }
+  .line.idle {
+    font-family: var(--mono);
+    font-weight: 400;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .caret::after {
+    content: '_';
+    margin-left: 2px;
+    animation: blink 1s steps(2) infinite;
+  }
+  .shuffling .line {
+    font-family: var(--mono);
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .sub {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  .note {
+    margin-top: 4px !important;
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .shuffle-embed {
+    margin-top: 14px;
+    max-width: 420px;
+    min-height: 152px;
+    transition: opacity 0.4s ease;
+  }
+  /* 曲名が決まるまでは見えない(場所だけ確保しておく) */
+  .shuffle-embed.pending {
+    opacity: 0;
+  }
+  .shuffle-embed :global(iframe) {
+    height: 152px;
+  }
+
+  @keyframes blink {
+    to {
+      visibility: hidden;
+    }
+  }
+  @keyframes pulse {
+    to {
+      opacity: 0.25;
+    }
+  }
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .caret::after,
+    .shuffling .status::before,
+    .playing .status::before,
+    .shuffling .icon {
+      animation: none;
+    }
+    .shuffle-embed {
+      transition: none;
+    }
+  }
+</style>

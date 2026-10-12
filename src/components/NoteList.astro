@@ -13,9 +13,12 @@ const { notes, empty = 'まだ記事がありません。' } = Astro.props;
   notes.length ? (
     <div class="list">
       {notes.map((n) => (
-        <a class="tile" href={n.url} target="_blank" rel="noopener noreferrer">
-          <p class="label">{n.date}</p>
-          <h2>{n.title}</h2>
+        <a class="tile note" href={n.url} target="_blank" rel="noopener noreferrer">
+          {n.thumbnail && <img class="thumb" src={n.thumbnail} alt="" loading="lazy" referrerpolicy="no-referrer" />}
+          <div class="body">
+            <p class="label">{n.date}</p>
+            <h2>{n.title}</h2>
+          </div>
         </a>
       ))}
     </div>
@@ -29,8 +32,37 @@ const { notes, empty = 'まだ記事がありません。' } = Astro.props;
     display: grid;
     gap: 12px;
   }
+  .note {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .thumb {
+    flex-shrink: 0;
+    width: 168px;
+    aspect-ratio: 1.91 / 1;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .body {
+    min-width: 0;
+  }
   h2 {
     margin: 0;
     padding-right: 24px;
+  }
+  .label {
+    margin-bottom: 0.4rem;
+  }
+
+  @media (max-width: 560px) {
+    .note {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .thumb {
+      width: 100%;
+    }
   }
 </style>

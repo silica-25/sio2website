@@ -7,15 +7,16 @@ import { hobbies } from '../data/site';
   <div class="page-head">
     <p class="label">hobbies</p>
     <h1>Hobbies</h1>
-    <p class="lead">好きなこと、ハマっていること。</p>
+    <p class="lead">好きなこと、ハマっていること。クリックするとそれぞれの記録ページに飛びます。</p>
   </div>
 
   <div class="grid">
     {
       hobbies.map((h, i) => {
-        const Tag = h.href ? 'a' : 'section';
+        const href = h.slug ? `/hobbies/${h.slug}` : h.href;
+        const Tag = href ? 'a' : 'section';
         return (
-          <Tag class="tile" href={h.href}>
+          <Tag class="tile scrap" href={href}>
             <p class="label">{String(i + 1).padStart(2, '0')}</p>
             <h2>{h.title}</h2>
             {h.note && <p class="note">{h.note}</p>}
@@ -30,7 +31,7 @@ import { hobbies } from '../data/site';
   .grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 12px;
+    gap: 16px;
   }
   h2 {
     margin: 0 0 0.5rem;
@@ -39,5 +40,41 @@ import { hobbies } from '../data/site';
     margin: 0;
     color: var(--muted);
     font-size: 0.92rem;
+  }
+
+  /* スクラップブック風に、少しだけ傾けて並べる */
+  .scrap {
+    transition:
+      transform 0.15s ease,
+      border-color 0.15s;
+  }
+  .scrap:nth-child(6n + 1) {
+    transform: rotate(-1.5deg);
+  }
+  .scrap:nth-child(6n + 2) {
+    transform: rotate(1deg);
+  }
+  .scrap:nth-child(6n + 3) {
+    transform: rotate(-0.75deg);
+  }
+  .scrap:nth-child(6n + 4) {
+    transform: rotate(1.75deg);
+  }
+  .scrap:nth-child(6n + 5) {
+    transform: rotate(-2deg);
+  }
+  .scrap:nth-child(6n + 6) {
+    transform: rotate(0.5deg);
+  }
+  .scrap:hover {
+    transform: rotate(0deg) scale(1.03);
+    z-index: 1;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scrap {
+      transform: none !important;
+      transition: none;
+    }
   }
 </style>

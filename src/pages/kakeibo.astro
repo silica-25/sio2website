@@ -1,11 +1,13 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NoteList from '../components/NoteList.astro';
+import Feed from '../components/Feed.astro';
 import { getNotes } from '../data/notes';
-import { kakeibo, log } from '../data/site';
+import { buildFeed } from '../data/feed';
+import { kakeibo } from '../data/site';
 
 const related = (await getNotes()).filter((n) => n.title.includes(kakeibo.keyword));
-const devLog = log.filter((l) => l.tag === 'kakeibo');
+const devFeed = await buildFeed('kakeibo');
 ---
 
 <BaseLayout title="Kakeibo" description={kakeibo.summary}>
@@ -30,40 +32,12 @@ const devLog = log.filter((l) => l.tag === 'kakeibo');
     empty={`Note でタイトルに「${kakeibo.keyword}」を含む記事を公開すると、ここに並びます。`}
   />
 
-  {
-    devLog.length > 0 && (
-      <>
-        <h2 class="label gap">dev log</h2>
-        <ul>
-          {devLog.map((l) => (
-            <li>
-              <span class="date">{l.date}</span>
-              {l.text}
-            </li>
-          ))}
-        </ul>
-      </>
-    )
-  }
+  <h2 class="label gap">dev log</h2>
+  <Feed items={devFeed} />
 </BaseLayout>
 
 <style>
   .gap {
     margin-top: 2.5rem;
-  }
-  ul {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-  }
-  li {
-    padding: 6px 0;
-    border-top: 1px solid var(--border);
-  }
-  .date {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    color: var(--muted);
-    margin-right: 10px;
   }
 </style>

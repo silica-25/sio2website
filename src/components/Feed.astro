@@ -1,0 +1,483 @@
+---
+import { Image } from 'astro:assets';
+import type { FeedItem } from '../data/feed';
+
+interface Props {
+  items: FeedItem[];
+  empty?: string;
+  /** true にすると、月ごとの折りたたみを最初から全部開いた状態にする */
+  expandAll?: boolean;
+}
+
+const { items, empty = 'まだ記録がありません。', expandAll = false } = Astro.props;
+
+// レンズボックスで拡大表示するもの (写真、ミニプレイヤーを持たない曲のジャケット)
+const hasLightboxItems = items.some(
+  (i) => (i.kind === 'photo' && i.photo) || (i.kind === 'track' && i.image && !i.embedUrl),
+);
+
+const domain = (url?: string) => {
+  if (!url) return '';
+  try {
+    return new URL(url).hostname.replace(/^www\./, '');
+  } catch {
+    return '';
+  }
+};
+
+// 月ごとにまとめる。items は日付の新しい順なので、グループも新しい順になる。
+// いちばん新しい月だけ開いた状態で、それより前は畳んでおく(expandAll が true なら全部開く)。
+const monthLabel = (key: string) => {
+  if (key === 'unknown') return '日付不明';
+  const [y, m] = key.split('-');
+  return `${y}年${Number(m)}月`;
+};
+
+// 月 → 日 の二段でまとめる。同じ日の投稿は日付見出しを1回だけ出す。
+interface DayGroup {
+  date: string;
+  items: typeof items;
+}
+interface MonthGroup {
+  key: string;
+  days: DayGroup[];
+}
+
+const monthGroups: MonthGroup[] = [];
+for (const item of items) {
+  const monthKey = item.date ? item.date.slice(0, 7) : 'unknown';
+  let month = monthGroups.at(-1);
+  if (!month || month.key !== monthKey) {
+    month = { key: monthKey, days: [] };
+    monthGroups.push(month);
+  }
+  const dayKey = item.date || '';
+  let day = month.days.at(-1);
+  if (!day || day.date !== dayKey) {
+    day = { date: dayKey, items: [] };
+    month.days.push(day);
+  }
+  day.items.push(item);
+}
+---
+
+{
+  items.length ? (
+    <div class="feed">
+      {monthGroups.map((month, gi) => (
+        <details class="month" open={expandAll || gi === 0}>
+          <summary class="month-label">
+            {monthLabel(month.key)} <span class="count">({month.days.reduce((n, d) => n + d.items.length, 0)})</span>
+          </summary>
+          <div class="month-items">
+            {month.days.map((day) => (
+              <div class="day-group">
+                <p class="day-label">{day.date || '日付不明'}</p>
+                <ul class="day-items">
+                  {day.items.map((item) => {
+                    if (item.kind === 'photo' && item.photo) {
+                      return (
+                        <li class="entry photo-entry">
+                          <button
+                            type="button"
+                            class="feed-thumb"
+                            data-src={item.photo.src.src}
+                            aria-label={item.photo.caption}
+                          >
+                            <Image src={item.photo.src} alt={item.photo.caption} width={240} height={240} loading="lazy" />
+                          </button>
+                          <span class="caption">{item.photo.caption}</span>
+                          {item.photo.comment && <p class="comment">{item.photo.comment}</p>}
+                        </li>
+                      );
+                    }
+                    if (item.kind === 'track') {
+                      return (
+                        <li class="entry photo-entry track-entry">
+                          <div class="track-body">
+                            <p class="track-title">{item.text}</p>
+                            {item.sub && <p class="track-sub">{item.sub}</p>}
+                            {item.comment && <p class="comment">{item.comment}</p>}
+                          </div>
+                          {item.embedUrl ? (
+                            <div class="embed-wrap track-embed">
+                              <iframe src={item.embedUrl} loading="lazy" allow="encrypted-media" title={item.text} />
+                            </div>
+                          ) : (
+                            <>
+                              {item.image && (
+                                <button type="button" class="feed-thumb" data-src={item.image} aria-label={item.text}>
+                                  <img src={item.image} alt={item.text} loading="lazy" />
+                                </button>
+                              )}
+                              {item.url && (
+                                <a class="link" href={item.url} target="_blank" rel="noopener noreferrer">
+                                  聴く ↗
+                                </a>
+                              )}
+                            </>
+                          )}
+                        </li>
+                      );
+                    }
+                    if (item.kind === 'score') {
+                      return (
+                        <li class="entry score-entry">
+                          <div class="score-body">
+                            <strong class="score-value">{item.text}</strong>
+                            {item.sub && <span class="score-sub">{item.sub}</span>}
+                          </div>
+                          {item.comment && <p class="comment">{item.comment}</p>}
+                        </li>
+                      );
+                    }
+                    if (item.kind === 'link' && item.url) {
+                      return (
+                        <li class="entry">
+                          <a class="link-card" href={item.url} target="_blank" rel="noopener noreferrer">
+                            {item.text} <span class="domain">{domain(item.url)}</span>
+                          </a>
+                          {item.comment && <p class="comment">{item.comment}</p>}
+                        </li>
+                      );
+                    }
+                    if (item.kind === 'quote') {
+                      return (
+                        <li class="entry quote-entry">
+                          <blockquote>
+                            “{item.text}”{item.sub && <cite>— {item.sub}</cite>}
+                          </blockquote>
+                          {item.comment && <p class="comment">{item.comment}</p>}
+                        </li>
+                      );
+                    }
+                    if (item.kind === 'embed' && item.url) {
+                      return (
+                        <li class="entry embed-entry">
+                          <div class="embed-wrap">
+                            <iframe src={item.url} loading="lazy" allow="encrypted-media" title={item.text || 'embed'} />
+                          </div>
+                          {item.text && <p class="caption">{item.text}</p>}
+                          {item.comment && <p class="comment">{item.comment}</p>}
+                        </li>
+                      );
+                    }
+                    return <li class="entry">{item.text}</li>;
+                  })}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </details>
+      ))}
+    </div>
+  ) : (
+    <p class="lead">{empty}</p>
+  )
+}
+
+{
+  hasLightboxItems && (
+    <div class="lightbox" id="feed-lightbox" hidden>
+      <button type="button" class="close" id="feed-lightbox-close" aria-label="閉じる">
+        ✕
+      </button>
+      <figure>
+        <img id="feed-lightbox-img" alt="" />
+        <figcaption id="feed-lightbox-caption" class="bubble" />
+      </figure>
+    </div>
+  )
+}
+
+<script>
+  const lightbox = document.getElementById('feed-lightbox');
+  if (lightbox) {
+    const imgEl = document.getElementById('feed-lightbox-img') as HTMLImageElement;
+    const captionEl = document.getElementById('feed-lightbox-caption') as HTMLElement;
+
+    const open = (src: string, caption: string) => {
+      imgEl.src = src;
+      imgEl.alt = caption;
+      captionEl.textContent = caption;
+      lightbox.hidden = false;
+      requestAnimationFrame(() => lightbox.classList.add('open'));
+      document.body.style.overflow = 'hidden';
+    };
+    const close = () => {
+      lightbox.classList.remove('open');
+      document.body.style.overflow = '';
+      setTimeout(() => {
+        lightbox.hidden = true;
+      }, 150);
+    };
+
+    document.querySelectorAll<HTMLButtonElement>('.feed-thumb').forEach((btn) => {
+      btn.addEventListener('click', () => open(btn.dataset.src ?? '', btn.getAttribute('aria-label') ?? ''));
+    });
+    document.getElementById('feed-lightbox-close')?.addEventListener('click', close);
+    lightbox.addEventListener('click', (e) => {
+      if (e.target === lightbox) close();
+    });
+    document.addEventListener('keydown', (e) => {
+      if (!lightbox.hidden && e.key === 'Escape') close();
+    });
+  }
+</script>
+
+<style>
+  .month + .month {
+    border-top: 1px solid var(--border);
+  }
+  .month-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 0;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.06em;
+    color: var(--muted);
+    cursor: pointer;
+    user-select: none;
+    list-style: none;
+  }
+  .month-label::-webkit-details-marker {
+    display: none;
+  }
+  .month-label::marker {
+    content: '';
+  }
+  .month-label::before {
+    content: '▸';
+    display: inline-block;
+    transition: transform 0.15s;
+  }
+  details[open] > .month-label::before {
+    transform: rotate(90deg);
+  }
+  .month-label:hover {
+    color: var(--text);
+  }
+  .month-label .count {
+    color: var(--muted);
+  }
+  .month-items {
+    padding: 0 0 4px;
+  }
+  .day-group + .day-group {
+    margin-top: 4px;
+  }
+  .day-label {
+    margin: 0;
+    padding-top: 10px;
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    color: var(--muted);
+    border-top: 1px solid var(--border);
+  }
+  .day-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .entry {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+    flex-wrap: wrap;
+  }
+  .entry + .entry {
+    border-top: 1px solid var(--border);
+  }
+
+  /* photo / track: 縦積みの大きめカード */
+  .photo-entry {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding-bottom: 16px;
+  }
+  .photo-entry .feed-thumb {
+    display: block;
+    width: clamp(140px, 34vw, 220px);
+    aspect-ratio: 1;
+    padding: 0;
+    margin: 0;
+    border: 1px solid var(--border);
+    background: none;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+  .photo-entry .feed-thumb:hover {
+    border-color: var(--strong);
+  }
+  .photo-entry .feed-thumb img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .photo-entry .caption {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  /* 自分用のひとことメモ */
+  .comment {
+    margin: 2px 0 0;
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .track-entry .feed-thumb {
+    width: clamp(96px, 24vw, 140px);
+  }
+  .track-body {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .track-title {
+    margin: 0;
+    font-weight: 600;
+  }
+  .track-sub {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+  /* track: ページ内でそのまま再生できるミニプレイヤー */
+  .track-embed {
+    max-width: 320px;
+  }
+  .track-embed iframe {
+    height: 152px;
+  }
+
+  /* score: 数字を大きく */
+  .score-body {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .score-value {
+    font-family: var(--mono);
+    font-size: 1.1rem;
+  }
+  .score-sub {
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  /* link: URL カード */
+  .link-card {
+    border: none;
+  }
+  .link-card::after {
+    content: ' ↗';
+  }
+  .link-card .domain {
+    color: var(--muted);
+    font-size: 0.8rem;
+    font-family: var(--mono);
+  }
+
+  /* quote: 引用 */
+  .quote-entry blockquote {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.6;
+  }
+  .quote-entry cite {
+    display: block;
+    margin-top: 4px;
+    font-style: normal;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  /* embed: 縦積み + iframe */
+  .embed-entry {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding-bottom: 16px;
+  }
+
+  .lightbox {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 56px 20px;
+    background: color-mix(in srgb, var(--bg) 90%, transparent);
+    backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .lightbox[hidden] {
+    display: none;
+  }
+  .lightbox.open {
+    opacity: 1;
+  }
+  .lightbox figure {
+    margin: 0;
+    max-width: min(92vw, 800px);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .lightbox img {
+    max-width: 100%;
+    max-height: 72vh;
+    display: block;
+    border: 1px solid var(--border);
+    background: var(--surface);
+  }
+  .bubble {
+    position: relative;
+    font-family: var(--mono);
+    font-size: 0.8rem;
+    letter-spacing: 0.02em;
+    color: var(--bg);
+    background: var(--strong);
+    padding: 8px 16px;
+    max-width: 100%;
+  }
+  .bubble:empty {
+    display: none;
+  }
+  .bubble::before {
+    content: '';
+    position: absolute;
+    top: -8px;
+    left: 22px;
+    width: 14px;
+    height: 8px;
+    background: var(--strong);
+    clip-path: polygon(0 100%, 100% 100%, 40% 0);
+  }
+  .close {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    width: 40px;
+    height: 40px;
+    background: none;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    cursor: pointer;
+  }
+  .close:hover {
+    border-color: var(--strong);
+  }
+</style>

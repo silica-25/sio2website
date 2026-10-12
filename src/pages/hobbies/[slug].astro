@@ -1,0 +1,120 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import Feed from '../../components/Feed.astro';
+import ShufflePlayer from '../../components/ShufflePlayer.astro';
+import { buildFeed } from '../../data/feed';
+import { getSpotifyOEmbed } from '../../data/spotify';
+import { hobbies, nowPlaying, music, type Hobby } from '../../data/site';
+
+export function getStaticPaths() {
+  return hobbies
+    .filter((h): h is Hobby & { slug: string } => Boolean(h.slug))
+    .map((h) => ({ params: { slug: h.slug }, props: { hobby: h } }));
+}
+
+const { hobby } = Astro.props as { hobby: Hobby };
+const related = hobby.tag ? await buildFeed(hobby.tag) : [];
+
+// 音楽ページだけ、Now Playing とプレイリスト埋め込みの特別枠を出す
+const isMusic = hobby.slug === 'music';
+
+// ランダム再生に使う曲(ミニプレイヤーを持つ track だけ)
+const shuffleTracks = isMusic
+  ? related.flatMap((i) =>
+      i.kind === 'track' && i.embedUrl
+        ? [{ title: i.text ?? '', sub: i.sub, comment: i.comment, url: i.url, embedUrl: i.embedUrl }]
+        : [],
+    )
+  : [];
+
+// Now Playing のジャケットも、cover を書いていなければ Spotify の共有リンクから自動取得
+let nowPlayingCover = nowPlaying.cover;
+if (isMusic && nowPlaying.enabled && !nowPlayingCover && nowPlaying.url) {
+  const meta = await getSpotifyOEmbed(nowPlaying.url);
+  if (meta?.thumbnailUrl) nowPlayingCover = meta.thumbnailUrl;
+}
+---
+
+<BaseLayout title={hobby.title} description={hobby.note || hobby.body || hobby.title}>
+  <div class="page-head">
+    <p class="label"><a class="back link" href="/hobbies">← hobbies</a></p>
+    <h1>{hobby.title}</h1>
+    {hobby.note && <p class="lead">{hobby.note}</p>}
+    {isMusic && music.summary && <p class="lead">{music.summary}</p>}
+  </div>
+
+  {hobby.body && <p class="body">{hobby.body}</p>}
+
+  {
+    isMusic && nowPlaying.enabled && (
+      <div class="tile now-playing">
+        <p class="label">now playing</p>
+        <div class="now-playing-row">
+          {nowPlayingCover && <img src={nowPlayingCover} alt={nowPlaying.title} />}
+          <div>
+            <p class="track-title">{nowPlaying.title}</p>
+            {nowPlaying.artist && <p class="track-sub">{nowPlaying.artist}</p>}
+            {nowPlaying.url && (
+              <a class="link" href={nowPlaying.url} target="_blank" rel="noopener noreferrer">
+                聴く ↗
+              </a>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  {isMusic && <ShufflePlayer tracks={shuffleTracks} />}
+
+  <h2 class="label gap">log</h2>
+  <Feed
+    items={related}
+    empty={`まだ記録がありません。site.ts の log に tag: '${hobby.tag}' の項目を足すか、src/assets/photos/${hobby.tag}/ に写真を置くと、ここに並びます。`}
+    expandAll={isMusic}
+  />
+
+  {
+    isMusic && music.embedUrl && (
+      <div class="embed-wrap gap">
+        <iframe src={music.embedUrl} loading="lazy" allow="encrypted-media" title="プレイリスト" />
+      </div>
+    )
+  }
+</BaseLayout>
+
+<style>
+  .back {
+    border: none;
+  }
+  .body {
+    max-width: 34rem;
+  }
+  .gap {
+    margin-top: 2.5rem;
+  }
+  .now-playing {
+    margin-top: 1.5rem;
+  }
+  .now-playing-row {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .now-playing-row img {
+    width: 64px;
+    height: 64px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .track-title {
+    margin: 0;
+    font-weight: 600;
+  }
+  .track-sub {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+</style>

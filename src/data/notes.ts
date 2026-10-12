@@ -4,6 +4,8 @@ export interface NoteItem {
   title: string;
   url: string;
   date: string; // YYYY-MM-DD (JST)
+  /** Note のアイキャッチ(サムネイル)画像の URL。設定していない記事は空 */
+  thumbnail: string;
 }
 
 const tag = (xml: string, name: string) => {
@@ -37,6 +39,7 @@ export async function getNotes(): Promise<NoteItem[]> {
       title: tag(m[1], 'title'),
       url: tag(m[1], 'link'),
       date: toJstDate(tag(m[1], 'pubDate')),
+      thumbnail: tag(m[1], 'media:thumbnail'),
     }));
   } catch (e) {
     console.warn(`[notes] Note の RSS を取得できませんでした: ${e}`);

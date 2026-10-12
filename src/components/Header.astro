@@ -6,7 +6,7 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
 
 <header>
   <div class="container bar">
-    <a class="brand" href="/">{site.name}<span>_</span></a>
+    <a class="brand" href="/">{site.brand}</a>
     <nav>
       {
         nav.map((item) => (
@@ -38,9 +38,8 @@ const path = Astro.url.pathname.replace(/\/$/, '') || '/';
     font-family: var(--mono);
     font-weight: 700;
     letter-spacing: 0.04em;
-  }
-  .brand span {
-    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
   }
   nav {
     display: flex;

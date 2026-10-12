@@ -1,0 +1,56 @@
+---
+// src/assets/icon.(jpg|png|webp|avif) を置くと、その画像がアイコンになる。
+// 置いていない間は、サイト名の頭文字を使った仮のアイコンを表示する。
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import { site } from '../data/site';
+
+interface Props {
+  size?: number;
+}
+
+const { size = 72 } = Astro.props;
+
+const modules = import.meta.glob<{ default: ImageMetadata }>(
+  '../assets/icon.{jpg,jpeg,png,webp,avif,JPG,JPEG,PNG,WEBP,AVIF}',
+  { eager: true },
+);
+const icon = Object.values(modules)[0]?.default;
+const initial = site.name.slice(0, 1).toUpperCase();
+
+// --avatar-size は CSS 変数なので、置く場所側で上書きしてサイズを変えられる
+// (例: 画面幅に応じて clamp() で縮める)。
+const style = `--avatar-size:${size}px`;
+---
+
+{
+  icon ? (
+    <Image src={icon} alt={`${site.name} のアイコン`} width={size} height={size} class="avatar" style={style} />
+  ) : (
+    <div class="avatar fallback" style={style} aria-hidden="true">
+      {initial}
+    </div>
+  )
+}
+
+<style>
+  .avatar {
+    display: block;
+    flex-shrink: 0;
+    width: var(--avatar-size);
+    height: var(--avatar-size);
+    object-fit: cover;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+  }
+  .fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-weight: 700;
+    font-size: calc(var(--avatar-size) * 0.4);
+    background: var(--surface);
+    color: var(--muted);
+  }
+</style>
