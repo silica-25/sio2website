@@ -86,5 +86,5 @@ export const photoComments: Record<string, string> = {
 export const timeline = [
   { year: '2025', text: '電気通信大学　Ⅰ類に入学' },
   { year: '2026-10-10', text: '家計簿アプリ「家ケイ簿」、公開' },
-  { year: '2026', text: 'このサイトを公開' },
+  { year: '2026-10-13', text: 'このサイトを改修して公開' },
 ]
