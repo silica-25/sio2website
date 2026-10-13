@@ -230,6 +230,51 @@ export const timeline = [
 
 ---
 
+## 4.6. サイトの名前・説明・リンクなど(サイト全体の文言)を変える
+
+サイト全体の文言は、ほとんど `src/data/site.ts` の**一番上の `site`** にまとまっています。
+
+```ts
+export const site = {
+  name: 'sio2',                       // トップの大きな名前、フッター、タブのタイトル
+  brand: 'sio2_website',              // 左上(ヘッダー)のロゴ文字
+  title: 'sio2 | Personal Site',      // トップページのタブのタイトル
+  description: '...',                 // 検索結果やSNSで共有したときの説明文
+  tagline: '人生とは孤独である',        // トップの名前の下の一言
+  bio: '...',                         // About の自己紹介文
+  email: '...',                       // About・フッターのメールアドレス
+  noteUser: 'sio2_25',                // Note のユーザー名(記事一覧の取得先)
+  links: [                            // フッター・About の SNS リンク(増減OK)
+    { label: 'Note', href: 'https://note.com/sio2_25' },
+  ],
+};
+```
+
+その下にも、変えたくなる場所があります。
+
+| 変えたいもの | 場所 |
+|---|---|
+| ヘッダーのメニュー(名前・並び順・増減) | `src/data/site.ts` の `nav` |
+| 家計簿ページの名前・状態・説明 | `src/data/site.ts` の `kakeibo`(4. 参照) |
+| 経歴(About の timeline) | `src/data/site.ts` の `timeline` |
+| 音楽ページの説明文 | `src/data/site.ts` の `music.summary` |
+| 趣味の一覧・一言 | `src/data/site.ts` の `hobbies`(3. 参照) |
+
+**ページに直接書いてある説明文**は、そのページのファイルを開いて書き換えます(`<p class="lead">` の中身が説明文です)。
+
+| 変えたい文 | ファイル |
+|---|---|
+| Photos の説明文 | `src/pages/photos.astro` |
+| Notes の説明文 | `src/pages/notes.astro` |
+| Hobbies の説明文 | `src/pages/hobbies.astro` |
+| トップの `// personal site` の小さいラベル、「趣味」タイル | `src/pages/index.astro` |
+
+- ブラウザのタブに出る小さなアイコンは `public/favicon.svg`(と `favicon.ico`)を差し替えます。
+- 文字を書き換えたら、6. で確認して 7. で公開します。
+- `name` を変えると、トップの大きな名前・フッター・各ページのタブのタイトルがまとめて変わります。左上だけ変えたいときは `brand` です。
+
+---
+
 ## 5. アイコン画像を差し替える(Home・About)
 
 `src/assets/icon.png`(jpg / webp / avif でも可)という名前で画像を置く。
@@ -268,6 +313,20 @@ git push
 
 push すると Vercel が自動でビルドし直して、数十秒〜1分程度で
 `https://sio2website.vercel.app` に反映されます(Note の新着記事もこのタイミングで取り込まれます)。
+反映に数分かかることもあります。
+
+**公開サイトが更新されないとき**: Vercel の sio2website → Deployments を開いて、新しいデプロイが
+出ているか、エラー(赤)になっていないかを見てください。エラーならログの文面が原因の手がかりです。
+
+**コミットのメールアドレスについて**: コミットには作者のメールアドレスが記録され、Public のリポジトリでは
+誰でも見えます。このリポジトリは GitHub 用の noreply アドレス
+(`288636233+silica-25@users.noreply.github.com`)で記録するよう設定してあります。
+別のパソコンで作業するときは、最初に次の2行を実行してください。
+
+```bash
+git config user.name "silica-25"
+git config user.email "288636233+silica-25@users.noreply.github.com"
+```
 
 ---
 
@@ -277,4 +336,7 @@ push すると Vercel が自動でビルドし直して、数十秒〜1分程度
 - `src/components/` `src/layouts/` — 見た目の共通パーツ(デザインを変えたいときだけ触る)
 - `src/pages/hobbies/[slug].astro` — hobbies の項目から自動でページが作られる仕組み
 - `src/data/feed.ts` — 同じ tag の log と写真を日付順に混ぜて並べる仕組み(/kakeibo, /hobbies/<slug> で使用)
+- `src/styles/global.css` の「ページ移動をなめらかにする」部分 — ページを移動するときのフェードの動き(ヘッダーは動かず本文だけ入れ替わる)。
+  対応していないブラウザでは普通に移動するだけです。無効にしたいときはその部分を削除してください。
+- `astro.config.mjs` — リンクにマウスを乗せたときに次のページを先読みする設定
 - `src/data/log/index.ts` `src/data/log/types.ts` — タグ別ファイルをまとめて並べ替える仕組み(新しいタグを増やすとき以外は触らなくてOK)

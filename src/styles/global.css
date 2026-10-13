@@ -142,3 +142,41 @@ a.tile:hover::after {
   height: 352px;
   border: 0;
 }
+
+/* ページ移動をなめらかにする(対応ブラウザのみ。非対応でも普通に移動できる)。
+   ヘッダーは動かさず、本文だけが軽くフェードしながら入れ替わる。 */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition {
+    navigation: auto;
+  }
+
+  body > header {
+    view-transition-name: site-header;
+  }
+
+  main {
+    view-transition-name: page;
+  }
+
+  ::view-transition-old(page) {
+    animation: vt-out 0.16s ease both;
+  }
+
+  ::view-transition-new(page) {
+    animation: vt-in 0.3s ease both;
+  }
+
+  @keyframes vt-out {
+    to {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+
+  @keyframes vt-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+  }
+}

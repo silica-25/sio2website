@@ -4,7 +4,7 @@ export const site = {
   // 左上(ヘッダー)のロゴ文字。トップの大きな名前やフッターは name のまま
   brand: 'sio2_website',
   title: 'sio2 | Personal Site',
-  description: '趣味、家計簿アプリ、Note の記事など、二酸化ケイ素の個人サイト。',
+  description: '二酸化ケイ素の個人サイト。',
   tagline: '人生とは孤独である',
   // About ページの自己紹介文。ここを書き換えるだけで /about に反映される
   bio: 'ひとりでバイトばっかりしてる理系大学生。サークルにも部活にも所属していないため人脈が少ない。',
