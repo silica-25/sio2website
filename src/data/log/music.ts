@@ -4,6 +4,27 @@ import type { LogEntry } from './types';
 // track 形式は url に Spotify の共有リンクを貼るだけで OK (ジャケット画像は自動取得)。
 export const musicLog: LogEntry[] = [
   {
+    date: '2026-10-29',
+    tag: 'music',
+    kind: 'track',
+    text: 'AVATAR -Will Support',
+    url: 'https://open.spotify.com/intl-ja/track/1vX37zVLJgmUlrkmjKw91g?si=0ae6621ca6da44a8',
+  },
+  {
+    date: '2026-10-29',
+    tag: 'music',
+    kind: 'track',
+    text: 'Summer Guys -TIVE,Esosa Vee,Ryowitki',
+    url: 'https://open.spotify.com/intl-ja/track/54nHPMftaoVwFgQvAupuFK?si=563c21f34bac4f31',
+  },
+  {
+    date: '2026-10-15',
+    tag: 'music',
+    kind: 'track',
+    text: '冷めきっている雨 -VERRY SMoL',
+    url: 'https://open.spotify.com/intl-ja/track/2W2BrPjHEljzz9P9KL2PhN?si=6d2591af96244014',
+  },
+  {
     date: '2026-10-13',
     tag: 'music',
     kind: 'track',
@@ -38,8 +59,8 @@ export const musicLog: LogEntry[] = [
     date: '2026-09-23',
     tag: 'music',
     kind: 'track',
-    text: 'Batologue -Yvng Patra・Oddy lozy',
-    url: 'https://open.spotify.com/intl-ja/track/0wH5XebqPML5XKZuSdrAjv?si=76d25cccc8524f4f',
+    text: 'Flawless -Yvng Patra',
+    url: 'https://open.spotify.com/intl-ja/track/383XhjAsSGTg6cielHx3uL?si=eb3e7449e36e4da9',
   },
   {
     date: '2026-08-15',

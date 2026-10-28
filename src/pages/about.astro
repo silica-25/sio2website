@@ -1,7 +1,7 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import Avatar from '../components/Avatar.astro';
-import { site, timeline } from '../data/site';
+import { site, timeline, certifications } from '../data/site';
 ---
 
 <BaseLayout title="About" description={`${site.name} について`}>
@@ -24,9 +24,9 @@ import { site, timeline } from '../data/site';
       <ul>
         {
           timeline.map((t) => (
-            <li>
+            <li class="row">
               <span class="year">{t.year}</span>
-              {t.text}
+              <span>{t.text}</span>
             </li>
           ))
         }
@@ -48,6 +48,25 @@ import { site, timeline } from '../data/site';
         }
       </ul>
     </section>
+
+    {
+      certifications.length > 0 && (
+        <section class="tile">
+          <p class="label">certifications</p>
+          <ul>
+            {certifications.map((c) => (
+              <li class="row cert">
+                <span class="year">{c.date ?? ''}</span>
+                <span>{c.name}</span>
+                <span class="cert-note" hidden={!c.note}>
+                  {c.note}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
   </div>
 </BaseLayout>
 
@@ -80,10 +99,29 @@ import { site, timeline } from '../data/site';
     padding: 6px 0;
     border-top: 1px solid var(--border);
   }
+  /* 日付 | 本文 | 補足 の3列に固定して、日付や補足がない行でも本文の開始位置をそろえる */
+  .row {
+    display: grid;
+    grid-template-columns: 4.7rem 1fr;
+    column-gap: 12px;
+    align-items: baseline;
+  }
+  .row.cert {
+    grid-template-columns: 4.7rem 1fr auto;
+  }
   .year {
     font-family: var(--mono);
     font-size: 0.75rem;
     color: var(--muted);
-    margin-right: 12px;
+  }
+  .cert-note {
+    justify-self: end;
+    padding: 0 6px;
+    border: 1px solid var(--border);
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    line-height: 1.6;
+    white-space: nowrap;
+    color: var(--muted);
   }
 </style>

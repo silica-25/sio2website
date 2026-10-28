@@ -72,7 +72,7 @@ export const nowPlaying = {
 
 // /hobbies/music 用の設定
 export const music = {
-  summary: '聴いてる曲を共有する場所。RAPSTARきっかけで聞く人が多い。',
+  summary: '聴いてる曲のなかでもオススメを共有する場所。RAPSTARきっかけで聞く人が多い。',
   // Spotify/YouTube の「埋め込み(embed)」用 URL を入れると、ページ下部にプレイヤーが埋め込まれる
   embedUrl: '',
 };
@@ -83,8 +83,25 @@ export const photoComments: Record<string, string> = {
   // '合格画像': 'ここにコメント',
 };
 
+export interface Certification {
+  /** 取得した年月など (例: '2026-03')。空でも OK */
+  date?: string;
+  name: string;
+  /** 点数や級などの補足 (例: '合格' '600点')。空でも OK */
+  note?: string;
+}
+
+// 資格・検定。About ページの右側に出る。0件のときは枠ごと表示されない。
+// 例: { date: '2026-03', name: '基本情報技術者試験', note: '合格' },
+export const certifications: Certification[] = [
+  { date: '2026-03', name: '基本情報技術者試験', note: '合格' },
+  { name: '実用英語技能検定', note: '2級' },
+  { name: '日本漢字能力検定', note: '準2級' },
+];
+
 export const timeline = [
   { year: '2025', text: '電気通信大学　Ⅰ類に入学' },
   { year: '2026-10-10', text: '家計簿アプリ「家ケイ簿」、公開' },
   { year: '2026-10-13', text: 'このサイトを改修して公開' },
+  { year: '2026-10-28', text: 'FEに合格' },
 ]

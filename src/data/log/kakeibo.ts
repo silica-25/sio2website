@@ -6,4 +6,5 @@ export const kakeiboLog: LogEntry[] = [
   { date: '2026-08-28', tag: 'kakeibo', text: '家計簿アプリのクローズドテストの開始。' },
   { date: '2026-09-18', tag: 'kakeibo', text: '家計簿アプリの正規版の公開申請をした。' },
   { date: '2026-10-10', tag: 'kakeibo', text: '製品版の公開をした。' },
+  { date: '2026-10-16', tag: 'kakeibo', text: '不具合の修正をしたアップデートを配信。' },
 ];

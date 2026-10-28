@@ -14,7 +14,11 @@ const { notes, empty = 'まだ記事がありません。' } = Astro.props;
     <div class="list">
       {notes.map((n) => (
         <a class="tile note" href={n.url} target="_blank" rel="noopener noreferrer">
-          {n.thumbnail && <img class="thumb" src={n.thumbnail} alt="" loading="lazy" referrerpolicy="no-referrer" />}
+          {n.thumbnail ? (
+            <img class="thumb" src={n.thumbnail} alt="" loading="lazy" referrerpolicy="no-referrer" />
+          ) : (
+            <span class="thumb ph" aria-hidden="true" />
+          )}
           <div class="body">
             <p class="label">{n.date}</p>
             <h2>{n.title}</h2>
@@ -44,6 +48,17 @@ const { notes, empty = 'まだ記事がありません。' } = Astro.props;
     object-fit: cover;
     border: 1px solid var(--border);
     background: var(--bg);
+  }
+  /* サムネイルがない記事にも同じ大きさの空き枠を置いて、文字の位置をそろえる */
+  .thumb.ph {
+    display: block;
+    background: repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 6px,
+      var(--border) 6px,
+      var(--border) 7px
+    );
   }
   .body {
     min-width: 0;

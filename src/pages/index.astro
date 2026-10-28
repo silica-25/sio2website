@@ -42,8 +42,10 @@ const notes = await getNotes();
           <ul>
             {notes.slice(0, 4).map((n) => (
               <li class="note-row">
-                {n.thumbnail && (
+                {n.thumbnail ? (
                   <img class="note-thumb" src={n.thumbnail} alt="" loading="lazy" referrerpolicy="no-referrer" />
+                ) : (
+                  <span class="note-thumb ph" aria-hidden="true" />
                 )}
                 <div>
                   <span class="date">{n.date}</span>
@@ -65,10 +67,10 @@ const notes = await getNotes();
       <ul>
         {
           sortedLog.slice(0, 6).map((l) => (
-            <li>
+            <li class="log-row">
               <span class="date">{l.date}</span>
               <span class="tag">{l.tag}</span>
-              {l.text}
+              <span>{l.text}</span>
             </li>
           ))
         }
@@ -180,11 +182,46 @@ const notes = await getNotes();
     object-fit: cover;
     border: 1px solid var(--border);
   }
+  /* サムネイルがない記事にも同じ大きさの空き枠を置いて、文字の位置をそろえる */
+  .note-thumb.ph {
+    display: block;
+    background: repeating-linear-gradient(
+      135deg,
+      transparent 0,
+      transparent 5px,
+      var(--border) 5px,
+      var(--border) 6px
+    );
+  }
+  /* 日付 | タグ | 本文 の3列に固定。タグの長さが違っても本文の開始位置がそろう */
+  .log-row {
+    display: grid;
+    grid-template-columns: 5.4rem 5.8rem 1fr;
+    align-items: baseline;
+  }
+  .log-row .tag {
+    justify-self: start;
+    max-width: calc(100% - 6px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
   .more {
     float: right;
   }
   .more:hover {
     color: var(--text);
+  }
+
+  /* 幅が狭いときは、本文を日付・タグの下の行に回す */
+  @media (max-width: 900px) {
+    .log-row {
+      grid-template-columns: auto 1fr;
+    }
+    .log-row > span:last-child {
+      grid-column: 1 / -1;
+      margin-top: 2px;
+    }
   }
 
   @media (max-width: 720px) {

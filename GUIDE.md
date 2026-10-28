@@ -228,6 +228,22 @@ export const timeline = [
 
 `timeline` はどこに足しても順番はそのまま表示されるので、古い順に並べて書いてください。
 
+### 資格を載せる(About の右側の枠)
+
+`src/data/site.ts` の `certifications` に 1 行ずつ足す。**0件のときは枠ごと表示されません。**
+
+```ts
+export const certifications: Certification[] = [
+  { date: '2026-03', name: '基本情報技術者試験', note: '合格' },
+  { name: 'TOEIC', note: '600点' },
+];
+```
+
+- `name`: 資格の名前(必須)
+- `date`: 取得した年月(なくても OK。あると名前の左に小さく出ます)
+- `note`: 点数や級など(なくても OK。名前の右に小さな枠で出ます)
+- 並び順は書いた順のまま表示されます。
+
 ---
 
 ## 4.6. サイトの名前・説明・リンクなど(サイト全体の文言)を変える
