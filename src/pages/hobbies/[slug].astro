@@ -68,11 +68,7 @@ if (isMusic && nowPlaying.enabled && !nowPlayingCover && nowPlaying.url) {
   {isMusic && <ShufflePlayer tracks={shuffleTracks} />}
 
   <h2 class="label gap">log</h2>
-  <Feed
-    items={related}
-    empty={`まだ記録がありません。site.ts の log に tag: '${hobby.tag}' の項目を足すか、src/assets/photos/${hobby.tag}/ に写真を置くと、ここに並びます。`}
-    expandAll={isMusic}
-  />
+  <Feed items={related} expandAll={isMusic} />
 
   {
     isMusic && music.embedUrl && (

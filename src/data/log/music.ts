@@ -36,7 +36,6 @@ export const musicLog: LogEntry[] = [
   tag: 'music',
   kind: 'track',
   text: 'DUMP！ -Joe Cupertino,Daichi Yamamoto',
-  sub: 'DE:',
   url: 'https://open.spotify.com/intl-ja/track/6DmK3A22PshWUdGioiQvzs?si=5003453de9ea4b73',
   comment: 'RAPSTARがはじまったぞ',
 　},
