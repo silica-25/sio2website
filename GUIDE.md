@@ -207,7 +207,7 @@ export const apps: App[] = [
     status: '更新作業中',      // '開発中' 'リリース済み' など自由に
     summary: '家計簿アプリ。…',
     tag: 'kakeibo',           // dev log のタグ。src/data/log/kakeibo.ts のログが並ぶ
-    keyword: '家計簿',         // Note の記事タイトルにこの文字が入っていると自動で並ぶ(空なら Note 欄は出ない)
+    keyword: '家計簿',         // Note の記事タイトルにこの文字が入っていると自動で並ぶ(大文字・小文字は区別しない。空なら Note 欄は出ない)
     href: '',                 // リポジトリやストアの URL(あれば)
   },
   ...

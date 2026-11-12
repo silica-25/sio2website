@@ -13,7 +13,10 @@ export function getStaticPaths() {
 
 const { app } = Astro.props;
 const keyword = app.keyword;
-const related = keyword ? (await getNotes()).filter((n) => n.title.includes(keyword)) : [];
+// 大文字・小文字の違いは無視して探す (MysHelf / myshelf / MYSHELF どれでも拾う)
+const related = keyword
+  ? (await getNotes()).filter((n) => n.title.toLowerCase().includes(keyword.toLowerCase()))
+  : [];
 const devFeed = await buildFeed(app.tag);
 ---
 

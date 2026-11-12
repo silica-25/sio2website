@@ -58,7 +58,7 @@ export const apps: App[] = [
     status: '開発中',
     summary: '自宅にある服などをアプリに登録して、外での買い物に役立てるアプリ。',
     tag: 'myshelf',
-    keyword: '',
+    keyword: 'MysHelf',
     href: '',
   },
 ];
