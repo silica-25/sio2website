@@ -21,7 +21,8 @@
 
 | tag | ファイル | 出る場所 |
 |---|---|---|
-| `kakeibo` | `src/data/log/kakeibo.ts` | `/kakeibo` の dev log |
+| `kakeibo` | `src/data/log/kakeibo.ts` | `/apps/kakeibo` の dev log |
+| `myshelf` | `src/data/log/myshelf.ts` | `/apps/myshelf` の dev log(MysHelf) |
 | `taiko` | `src/data/log/taiko.ts` | `/hobbies/taiko` の log |
 | `pokemon` | `src/data/log/pokemon.ts` | `/hobbies/pokemon` の log |
 | `music` | `src/data/log/music.ts` | `/hobbies/music` の log |
@@ -42,8 +43,8 @@
 
 **新しい趣味(タグ)を増やしたいとき**は、`src/data/log/` に新しいファイル(例: `game.ts`)を
 既存のファイルを真似して作り、`src/data/log/index.ts` に import とスプレッド(`...gameLog`)を
-1行ずつ足してください。トップページと Kakeibo の dev log はどのタグのログも横断して拾うので、
-新しいファイルを足すだけで自動的に反映されます。
+1行ずつ足してください。トップページの log はどのタグのログも横断して拾うので、
+そこには自動的に反映されます。
 
 ### 自分用のコメントを足す
 
@@ -193,19 +194,32 @@ export const music = {
 
 ---
 
-## 4. 家計簿アプリの説明を変える
+## 4. アプリ(`/apps`)の説明を変える・増やす
 
-`src/data/site.ts` の `kakeibo` を編集する。
+`src/data/site.ts` の `apps` を編集する。1 アプリ = 1 項目で、ここに書いたものが
+`/apps` の一覧とトップの「apps」タイルに並び、`/apps/<slug>` のページが自動でできます。
 
 ```ts
-export const kakeibo = {
-  name: '家計簿アプリ',
-  status: '開発中',       // 'リリース済み' などに変えてもいい
-  summary: '自分用に作っている家計簿アプリ。',
-  keyword: '家計簿',       // Note の記事タイトルにこの文字が入っていると自動でこのページに並ぶ
-  href: '',               // リポジトリやデモの URL(あれば)
-};
+export const apps: App[] = [
+  {
+    slug: 'kakeibo',          // URL になる部分(半角英数字)→ /apps/kakeibo
+    name: '家計簿アプリ',
+    status: '更新作業中',      // '開発中' 'リリース済み' など自由に
+    summary: '家計簿アプリ。…',
+    tag: 'kakeibo',           // dev log のタグ。src/data/log/kakeibo.ts のログが並ぶ
+    keyword: '家計簿',         // Note の記事タイトルにこの文字が入っていると自動で並ぶ(空なら Note 欄は出ない)
+    href: '',                 // リポジトリやストアの URL(あれば)
+  },
+  ...
+];
 ```
+
+**新しいアプリを増やすとき**:
+1. `apps` に 1 項目足す
+2. `src/data/log/` に dev log 用のファイル(例: `myshelf.ts`)を、既存のファイルを真似して作る
+3. `src/data/log/index.ts` に import とスプレッドを 1 行ずつ足す(1. の「新しい趣味を増やしたいとき」と同じ)
+
+昔の URL `/kakeibo` は自動で `/apps/kakeibo` に飛ぶようにしてあります(`astro.config.mjs` の `redirects`)。
 
 ---
 
@@ -271,7 +285,7 @@ export const site = {
 | 変えたいもの | 場所 |
 |---|---|
 | ヘッダーのメニュー(名前・並び順・増減) | `src/data/site.ts` の `nav` |
-| 家計簿ページの名前・状態・説明 | `src/data/site.ts` の `kakeibo`(4. 参照) |
+| アプリの名前・状態・説明 | `src/data/site.ts` の `apps`(4. 参照) |
 | 経歴(About の timeline) | `src/data/site.ts` の `timeline` |
 | 音楽ページの説明文 | `src/data/site.ts` の `music.summary` |
 | 趣味の一覧・一言 | `src/data/site.ts` の `hobbies`(3. 参照) |
@@ -295,8 +309,8 @@ export const site = {
 
 `src/assets/icon.png`(jpg / webp / avif でも可)という名前で画像を置く。
 
-- 今は画像がないので、サイト名の頭文字(仮アイコン)が四角く出ています。
-- ファイルを置いて手順 6・7 をやれば、自動でその画像に切り替わります。
+- 今は `src/assets/icon.PNG` が置いてあります。差し替えるときは同じ名前で上書きしてください。
+- 画像がないときは、サイト名の頭文字(仮アイコン)が四角く出ます。
 - 正方形の画像がきれいに収まります。
 
 ---
@@ -350,8 +364,8 @@ git config user.email "288636233+silica-25@users.noreply.github.com"
 
 - `/notes` の内容 — note.com/sio2_25 の RSS からビルドのたびに自動取得
 - `src/components/` `src/layouts/` — 見た目の共通パーツ(デザインを変えたいときだけ触る)
-- `src/pages/hobbies/[slug].astro` — hobbies の項目から自動でページが作られる仕組み
-- `src/data/feed.ts` — 同じ tag の log と写真を日付順に混ぜて並べる仕組み(/kakeibo, /hobbies/<slug> で使用)
+- `src/pages/hobbies/[slug].astro` `src/pages/apps/[slug].astro` — hobbies / apps の項目から自動でページが作られる仕組み
+- `src/data/feed.ts` — 同じ tag の log と写真を日付順に混ぜて並べる仕組み(/apps/<slug>, /hobbies/<slug> で使用)
 - `src/styles/global.css` の「ページ移動をなめらかにする」部分 — ページを移動するときのフェードの動き(ヘッダーは動かず本文だけ入れ替わる)。
   対応していないブラウザでは普通に移動するだけです。無効にしたいときはその部分を削除してください。
 - `astro.config.mjs` — リンクにマウスを乗せたときに次のページを先読みする設定

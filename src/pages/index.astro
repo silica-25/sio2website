@@ -2,7 +2,7 @@
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { Image } from 'astro:assets';
 import Avatar from '../components/Avatar.astro';
-import { site, kakeibo, hobbies } from '../data/site';
+import { site, apps, hobbies } from '../data/site';
 import { sortedLog } from '../data/log';
 import { getNotes } from '../data/notes';
 import { photos } from '../data/photos';
@@ -23,11 +23,21 @@ const notes = await getNotes();
       <p class="lead">{site.tagline}</p>
     </section>
 
-    <a class="tile kakeibo" href="/kakeibo">
-      <p class="label">app / {kakeibo.status}</p>
-      <h2>{kakeibo.name}</h2>
-      <p class="sub">{kakeibo.summary}</p>
-    </a>
+    <section class="tile apps">
+      <p class="label">apps <a class="more" href="/apps">all →</a></p>
+      <ul>
+        {
+          apps.map((app) => (
+            <li>
+              <a class="app-row" href={`/apps/${app.slug}`}>
+                <span class="app-name">{app.name}</span>
+                <span class="tag">{app.status}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
 
     <a class="tile hobbies" href="/hobbies">
       <p class="label">hobbies</p>
@@ -127,9 +137,21 @@ const notes = await getNotes();
   .hero .lead {
     margin: 0;
   }
-  .kakeibo,
+  .apps,
   .hobbies {
     grid-column: span 2;
+  }
+  .app-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .app-row:hover .app-name {
+    text-decoration: underline;
+  }
+  .app-row .tag {
+    flex-shrink: 0;
   }
   .notes,
   .log {
@@ -229,7 +251,7 @@ const notes = await getNotes();
       grid-template-columns: 1fr;
     }
     .hero,
-    .kakeibo,
+    .apps,
     .hobbies,
     .notes,
     .log,

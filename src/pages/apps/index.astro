@@ -1,0 +1,40 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { apps } from '../../data/site';
+---
+
+<BaseLayout title="Apps" description="作っているアプリ">
+  <div class="page-head">
+    <p class="label">apps</p>
+    <h1>Apps</h1>
+    <p class="lead">作っているアプリ。クリックするとそれぞれの開発ログに飛びます。</p>
+  </div>
+
+  <div class="grid">
+    {
+      apps.map((app) => (
+        <a class="tile" href={`/apps/${app.slug}`}>
+          <p class="label">app / {app.status}</p>
+          <h2>{app.name}</h2>
+          <p class="note">{app.summary}</p>
+        </a>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 16px;
+  }
+  h2 {
+    margin: 0 0 0.5rem;
+  }
+  .note {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+</style>

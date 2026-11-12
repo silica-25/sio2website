@@ -19,21 +19,49 @@ export const site = {
 
 export const nav = [
   { label: 'Home', href: '/' },
-  { label: 'Kakeibo', href: '/kakeibo' },
+  { label: 'Apps', href: '/apps' },
   { label: 'Hobbies', href: '/hobbies' },
   { label: 'Photos', href: '/photos' },
   { label: 'Notes', href: '/notes' },
   { label: 'About', href: '/about' },
 ];
 
-// 家計簿アプリ。詳しい話は Note に書いて、タイトルに「家計簿」を含む記事がこのページに自動で並ぶ。
-export const kakeibo = {
-  name: '家計簿アプリ',
-  status: '開発中',
-  summary: '家計簿アプリ。個人用からリリースしました。現在はAndroid版のみです。',
-  keyword: '家計簿',
-  href: '',
-};
+export interface App {
+  /** ページの URL になる部分(半角英数字)。/apps/<slug> ができる */
+  slug: string;
+  name: string;
+  /** 「開発中」「公開中」「更新作業中」など。ラベルとして小さく出る */
+  status: string;
+  summary: string;
+  /** log の tag。src/data/log/<tag>.ts のログがこのアプリの dev log に並ぶ */
+  tag: string;
+  /** Note の記事タイトルにこの文字が入っていると自動でページに並ぶ。空なら Note 欄は出ない */
+  keyword?: string;
+  /** リポジトリやストア・デモの URL(あれば) */
+  href?: string;
+}
+
+// 作っているアプリ。ここに足すと /apps の一覧・トップのタイルに並び、/apps/<slug> のページができる。
+export const apps: App[] = [
+  {
+    slug: 'kakeibo',
+    name: '家計簿アプリ',
+    status: '更新作業中',
+    summary: '家計簿アプリ。個人用からリリースしました。現在はAndroid版のみです。',
+    tag: 'kakeibo',
+    keyword: '家計簿',
+    href: '',
+  },
+  {
+    slug: 'myshelf',
+    name: 'MysHelf',
+    status: '開発中',
+    summary: '自宅にある服などをアプリに登録して、外での買い物に役立てるアプリ。',
+    tag: 'myshelf',
+    keyword: '',
+    href: '',
+  },
+];
 
 export interface Hobby {
   title: string;

@@ -1,0 +1,53 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import NoteList from '../../components/NoteList.astro';
+import Feed from '../../components/Feed.astro';
+import { getNotes } from '../../data/notes';
+import { buildFeed } from '../../data/feed';
+import { apps } from '../../data/site';
+
+// src/data/site.ts の apps から 1 アプリずつページを作る
+export function getStaticPaths() {
+  return apps.map((app) => ({ params: { slug: app.slug }, props: { app } }));
+}
+
+const { app } = Astro.props;
+const keyword = app.keyword;
+const related = keyword ? (await getNotes()).filter((n) => n.title.includes(keyword)) : [];
+const devFeed = await buildFeed(app.tag);
+---
+
+<BaseLayout title={app.name} description={app.summary}>
+  <div class="page-head">
+    <p class="label"><a href="/apps">apps</a> / {app.status}</p>
+    <h1>{app.name}</h1>
+    <p class="lead">{app.summary}</p>
+    {
+      app.href && (
+        <p>
+          <a class="link" href={app.href} target="_blank" rel="noopener noreferrer">
+            リポジトリ / デモを見る ↗
+          </a>
+        </p>
+      )
+    }
+  </div>
+
+  {
+    keyword && (
+      <>
+        <h2 class="label">notes</h2>
+        <NoteList notes={related} empty={`Note でタイトルに「${keyword}」を含む記事を公開すると、ここに並びます。`} />
+      </>
+    )
+  }
+
+  <h2 class:list={['label', { gap: keyword }]}>dev log</h2>
+  <Feed items={devFeed} />
+</BaseLayout>
+
+<style>
+  .gap {
+    margin-top: 2.5rem;
+  }
+</style>
