@@ -52,15 +52,6 @@ export const apps: App[] = [
     keyword: '家計簿',
     href: '',
   },
-  {
-    slug: 'myshelf',
-    name: 'MysHelf',
-    status: '開発中',
-    summary: '自宅にある服などをアプリに登録して、外での買い物に役立てるローカルアプリ。',
-    tag: 'myshelf',
-    keyword: 'MysHelf',
-    href: '',
-  },
 ];
 
 export interface Hobby {

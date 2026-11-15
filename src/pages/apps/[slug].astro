@@ -13,7 +13,7 @@ export function getStaticPaths() {
 
 const { app } = Astro.props;
 const keyword = app.keyword;
-// 大文字・小文字の違いは無視して探す (MysHelf / myshelf / MYSHELF どれでも拾う)
+// 大文字・小文字の違いは無視して探す (例: keyword が 'ToDo' なら todo / TODO も拾う)
 const related = keyword
   ? (await getNotes()).filter((n) => n.title.toLowerCase().includes(keyword.toLowerCase()))
   : [];

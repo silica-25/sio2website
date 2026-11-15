@@ -22,7 +22,6 @@
 | tag | ファイル | 出る場所 |
 |---|---|---|
 | `kakeibo` | `src/data/log/kakeibo.ts` | `/apps/kakeibo` の dev log |
-| `myshelf` | `src/data/log/myshelf.ts` | `/apps/myshelf` の dev log(MysHelf) |
 | `taiko` | `src/data/log/taiko.ts` | `/hobbies/taiko` の log |
 | `pokemon` | `src/data/log/pokemon.ts` | `/hobbies/pokemon` の log |
 | `music` | `src/data/log/music.ts` | `/hobbies/music` の log |
@@ -214,10 +213,55 @@ export const apps: App[] = [
 ];
 ```
 
-**新しいアプリを増やすとき**:
-1. `apps` に 1 項目足す
-2. `src/data/log/` に dev log 用のファイル(例: `myshelf.ts`)を、既存のファイルを真似して作る
-3. `src/data/log/index.ts` に import とスプレッドを 1 行ずつ足す(1. の「新しい趣味を増やしたいとき」と同じ)
+### 新しいアプリの枠を作るとき
+
+例として「ToDo アプリ」を `todo` という名前で作る場合。`todo` の部分は、自分のアプリ用の
+半角英数字(小文字)に置き換えてください。
+
+**① `src/data/site.ts` の `apps` に 1 項目足す**(家計簿の項目の `},` の次の行に貼る)
+
+```ts
+  {
+    slug: 'todo',
+    name: 'ToDo アプリ',
+    status: '開発中',
+    summary: 'どんなアプリかの一言説明。',
+    tag: 'todo',
+    keyword: 'ToDo',   // Note の記事タイトルにこれが入ると自動で並ぶ。まだ要らなければ '' でOK
+    href: '',
+  },
+```
+
+**② `src/data/log/todo.ts` を新しく作る**(dev log 用。このままコピペして書き換える)
+
+```ts
+import type { LogEntry } from './types';
+
+// ToDo アプリの開発ログ。/apps/todo の dev log に表示される。
+export const todoLog: LogEntry[] = [
+  { date: '2026-11-16', tag: 'todo', text: '開発を始めた。' },
+];
+```
+
+**③ `src/data/log/index.ts` に 2 か所足す**
+
+```ts
+import { todoLog } from './todo';          // ← import が並んでいるところに 1 行足す
+
+export const log: LogEntry[] = [...kakeiboLog, ...todoLog, ...taikoLog, /* 以下そのまま */];
+//                                           ^^^^^^^^^^^ ← ここに足す
+```
+
+これで 6. の手順で確認すると、トップの apps タイル・`/apps` の一覧・`/apps/todo` に出ます。
+
+- `slug` と `tag` とファイル名(`todo.ts`)は同じ文字にそろえておくと迷いません。
+- `todoLog` は「slug + Log」です。②と③で同じ名前にしてください。
+- まだ公開したくないときは、①〜③をやらずにおくか、公開前(7. の push 前)に消してください。
+
+### アプリをやめる・非公開にするとき
+
+作るときの逆をやります。①で足した項目を `apps` から消す、②のファイルを消す、③の 2 か所を消す。
+どれか 1 つでも残っていると 6. の確認でエラーになるので、エラーが出たら残りを探してください。
 
 昔の URL `/kakeibo` は自動で `/apps/kakeibo` に飛ぶようにしてあります(`astro.config.mjs` の `redirects`)。
 
